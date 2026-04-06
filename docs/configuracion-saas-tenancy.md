@@ -111,15 +111,17 @@ Las migraciones en `database/migrations/` (excepto la carpeta `tenant`) corren c
 
 ### Pool (esquema compartido de tenants)
 
-Las migraciones en **`database/migrations/tenant/`** deben aplicarse en **cada** base de datos de pool donde habrá datos de tenant. El paquete usa:
+Las migraciones en **`database/migrations/tenant/`** deben aplicarse en **cada** base de datos de pool (una vez por BD física). Laravel no ejecuta esa subcarpeta con un `migrate` sin `--path`.
+
+Con single-database + pool, **no** dependas solo de `tenants:migrate`: en este proyecto lo habitual es:
 
 ```bash
-php artisan tenants:migrate
+php artisan migrate --path=database/migrations/tenant --database=pool_shared_1
 ```
 
-Ese comando está configurado en `config/tenancy.php` (`migration_parameters` → `--path` = `database/migrations/tenant`).
+(Ajusta el nombre de conexión si usas otro pool.)
 
-**Importante:** en este modo **no** se crea BD por tenant; `tenants:migrate` ejecuta esas migraciones en el contexto que Stancl use para tenants (según tu configuración). Si añades un segundo pool físico, debes ejecutar las mismas migraciones tenant contra esa BD (conexión nueva) según tu proceso de despliegue.
+Detalle: `config/tenancy.php` sigue apuntando `migration_parameters` a `database/migrations/tenant` por si usas comandos de Stancl en otros escenarios; la referencia operativa está en **`docs/migraciones-pool.md`**.
 
 ---
 

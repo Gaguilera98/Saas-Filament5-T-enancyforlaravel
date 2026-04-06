@@ -2,6 +2,10 @@
 
 namespace App\Providers\Filament;
 
+use App\Http\Middleware\SetSpatiePermissionTeam;
+use App\Http\Middleware\SetTenantDatabaseConnection;
+use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
+use Filament\Facades\Filament as FilamentFacade;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -13,7 +17,6 @@ use Filament\Support\Colors\Color;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
-use App\Http\Middleware\SetTenantDatabaseConnection;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
@@ -29,6 +32,8 @@ class ClientPanelProvider extends PanelProvider
         return $panel
             ->id('client')
             ->path('client')
+            ->authGuard('tenant')
+            ->authPasswordBroker('tenant_users')
             ->viteTheme('resources/css/filament/client/theme.css')
             ->login()
             ->colors([
@@ -49,6 +54,7 @@ class ClientPanelProvider extends PanelProvider
                 AddQueuedCookiesToResponse::class,
                 InitializeTenancyByDomain::class,
                 SetTenantDatabaseConnection::class,
+                SetSpatiePermissionTeam::class,
                 StartSession::class,
                 AuthenticateSession::class,
                 ShareErrorsFromSession::class,
@@ -58,6 +64,10 @@ class ClientPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
                 PreventAccessFromCentralDomains::class,
             ], true)
+            ->plugins([
+                FilamentShieldPlugin::make()
+                    ->centralApp(fn (): bool => FilamentFacade::getCurrentPanel()?->getId() === 'admin'),
+            ])
             ->authMiddleware([
                 Authenticate::class,
             ]);

@@ -3,8 +3,10 @@
 namespace App\Filament\Resources\Tenants\Pages;
 
 use App\Filament\Resources\Tenants\TenantResource;
+use App\Services\TenantPoolAdminProvisioner;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CreateTenant extends CreateRecord
 {
@@ -14,21 +16,29 @@ class CreateTenant extends CreateRecord
     {
         $tenant = $this->getRecord();
 
-        // 1. Crear el dominio
         $tenant->domains()->create([
             'domain' => $this->data['domain'],
         ]);
 
-        // 2. Crear usuario admin en el pool
-        DB::connection($tenant->db_pool)->table('users')->insert([
-            'tenant_id'  => $tenant->id,
-            'name'       => $this->data['admin_name'],
-            'email'      => $this->data['admin_email'],
-            'password'   => bcrypt($this->data['admin_password']),
-            'role'       => 'admin',
-            'is_active'  => true,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        try {
+            app(TenantPoolAdminProvisioner::class)->provision(
+                $tenant,
+                $this->data['admin_name'],
+                $this->data['admin_email'],
+                $this->data['admin_password'],
+            );
+        } catch (\Throwable $e) {
+            Log::error('TenantPoolAdminProvisioner failed', [
+                'tenant_id' => $tenant->id,
+                'exception' => $e,
+            ]);
+
+            Notification::make()
+                ->danger()
+                ->title('Tenant creado, pero falló el usuario admin en el pool')
+                ->body($e->getMessage())
+                ->persistent()
+                ->send();
+        }
     }
 }

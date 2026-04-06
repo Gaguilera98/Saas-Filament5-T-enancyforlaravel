@@ -2,6 +2,9 @@
 
 namespace App\Providers\Filament;
 
+use App\Http\Middleware\SetCentralSpatiePermissionTeam;
+use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
+use Filament\Facades\Filament as FilamentFacade;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -45,12 +48,17 @@ class AdminPanelProvider extends PanelProvider
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
+                SetCentralSpatiePermissionTeam::class,
                 AuthenticateSession::class,
                 ShareErrorsFromSession::class,
                 PreventRequestForgery::class,
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+            ])
+            ->plugins([
+                FilamentShieldPlugin::make()
+                    ->centralApp(fn (): bool => FilamentFacade::getCurrentPanel()?->getId() === 'admin'),
             ])
             ->authMiddleware([
                 Authenticate::class,
