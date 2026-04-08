@@ -28,10 +28,10 @@ class DomainResource extends Resource
                     ->unique(ignoreRecord: true)
                     ->maxLength(255),
                 Forms\Components\Select::make('tenant_id')
-                    ->label('Tenant asignado')
-                    ->relationship('tenant', 'id')
+                    ->label('Clínica (Tenant)')
+                    ->relationship('tenant', 'clinic_name') // Usamos clinic_name que sí existe en lugar del default 'name'
                     ->required()
-                    ->searchable(),
+                    ->searchable(['id', 'clinic_name']), // Forzamos búsqueda explícita para evitar errores SQL
             ]);
     }
 
@@ -42,8 +42,8 @@ class DomainResource extends Resource
                 Tables\Columns\TextColumn::make('domain')
                     ->label('Dominio')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('tenant.id')
-                    ->label('ID Tenant')
+                Tables\Columns\TextColumn::make('tenant.clinic_name')
+                    ->label('Tenant (Clínica)')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Creado el')
