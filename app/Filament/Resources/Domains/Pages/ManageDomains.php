@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\Resources\DomainResource\Pages;
+namespace App\Filament\Resources\Domains\Pages;
 
-use App\Filament\Resources\DomainResource;
-use Filament\Actions;
+use App\Filament\Resources\Domains\DomainResource;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
 
 class ManageDomains extends ManageRecords
@@ -13,7 +13,7 @@ class ManageDomains extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            CreateAction::make(),
         ];
     }
 }
