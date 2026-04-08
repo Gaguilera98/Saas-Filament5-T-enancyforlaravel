@@ -32,4 +32,32 @@ class User extends Authenticatable implements FilamentUser
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Define the access for Filament panels (Central Admin vs Tenant Client).
+     * This overrides the default HasPanelShield implementation to properly
+     * support Stancl/Tenancy and Livewire 3 lifecycle.
+     */
+    public function canAccessPanel(\Filament\Panel $panel): bool
+    {
+        if ($panel->getId() === 'admin') {
+            // Forzamos la validación contra el team_id central (0)
+            // porque las peticiones Livewire POST a veces pierden el Session middleware
+            $previousTeam = getPermissionsTeamId();
+            setPermissionsTeamId(config('filament-shield.central_team_id', 0));
+
+            $hasAccess = $this->hasRole(config('filament-shield.super_admin.name', 'super_admin'));
+
+            setPermissionsTeamId($previousTeam);
+            return $hasAccess;
+        }
+
+        if ($panel->getId() === 'client') {
+            // Aquí puedes colocar tu lógica para cuando los usuarios entran al panel del tenant.
+            // Usualmente si el usuario está atado a un TenantUser, devolver true.
+            return true; 
+        }
+
+        return false;
+    }
 }
