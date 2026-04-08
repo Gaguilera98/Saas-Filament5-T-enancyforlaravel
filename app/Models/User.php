@@ -32,21 +32,4 @@ class User extends Authenticatable implements FilamentUser
             'password' => 'hashed',
         ];
     }
-
-    public function canAccessPanel(\Filament\Panel $panel): bool
-    {
-        // 1. Logueamos el intento en producción
-        \Illuminate\Support\Facades\Log::info("Intentando login web. Email: " . $this->email);
-        
-        try {
-            $hasRole = $this->hasRole(config('filament-shield.super_admin.name'));
-            \Illuminate\Support\Facades\Log::info("¿Tiene el rol en BD (Spatie)? " . ($hasRole ? 'SI' : 'NO'));
-            \Illuminate\Support\Facades\Log::info("Roles actuales: ", $this->roles->pluck('name')->toArray());
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error("Error leyendo roles: " . $e->getMessage());
-        }
-
-        // 2. FORZAMOS EL ACCESO A TRUE para descartar fallas de Spatie
-        return true;
-    }
 }
