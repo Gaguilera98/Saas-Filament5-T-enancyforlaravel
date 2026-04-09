@@ -41,10 +41,13 @@ class User extends Authenticatable implements FilamentUser
     public function canAccessPanel(\Filament\Panel $panel): bool
     {
         if ($panel->getId() === 'admin') {
-            // Query directa a la relación de roles sin depender del team_id de Spatie,
-            // para evitar falsos negativos en peticiones Livewire AJAX.
-            return $this->roles()
-                ->where('name', config('filament-shield.super_admin.name', 'super_admin'))
+            // Query RAW a la BD ignorando el filtro de team_id de Spatie
+            // ($this->roles() filtra por team_id internamente y falla durante el login)
+            return \Illuminate\Support\Facades\DB::table('model_has_roles')
+                ->join('roles', 'roles.id', '=', 'model_has_roles.role_id')
+                ->where('model_has_roles.model_id', $this->id)
+                ->where('model_has_roles.model_type', static::class)
+                ->where('roles.name', config('filament-shield.super_admin.name', 'super_admin'))
                 ->exists();
         }
 

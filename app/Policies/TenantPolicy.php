@@ -18,10 +18,12 @@ class TenantPolicy
      */
     public function before(User $user, string $ability): bool|null
     {
-        // Verificación directa en BD de la relación de roles,
-        // sin depender del team_id de Spatie (que no está disponible en Livewire AJAX).
-        $isSuperAdmin = $user->roles()
-            ->where('name', config('filament-shield.super_admin.name', 'super_admin'))
+        // Query RAW ignorando el filtro de team_id de Spatie
+        $isSuperAdmin = \Illuminate\Support\Facades\DB::table('model_has_roles')
+            ->join('roles', 'roles.id', '=', 'model_has_roles.role_id')
+            ->where('model_has_roles.model_id', $user->id)
+            ->where('model_has_roles.model_type', get_class($user))
+            ->where('roles.name', config('filament-shield.super_admin.name', 'super_admin'))
             ->exists();
 
         return $isSuperAdmin ? true : null;
