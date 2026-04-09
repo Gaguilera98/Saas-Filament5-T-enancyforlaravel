@@ -26,7 +26,15 @@ class TenantForm
                             ->afterStateUpdated(function ($state, Set $set) {
                                 $slug = str($state)->slug()->toString();
                                 $set('id', $slug);
-                                $set('domain', $slug . '.localhost');
+                                
+                                // Obtener el primer dominio central configurado
+                                $centralDomains = config('tenancy.central_domains', []);
+                                $baseDomain = $centralDomains[0] ?? parse_url(config('app.url'), PHP_URL_HOST) ?? 'localhost';
+                                
+                                // Quitar el puerto si existe (ej: localhost:8000 -> localhost)
+                                $baseDomain = explode(':', $baseDomain)[0];
+                                
+                                $set('domain', $slug . '.' . $baseDomain);
                             }),
 
                         TextInput::make('id')
