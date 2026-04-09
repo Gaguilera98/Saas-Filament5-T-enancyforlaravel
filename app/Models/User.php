@@ -41,15 +41,11 @@ class User extends Authenticatable implements FilamentUser
     public function canAccessPanel(\Filament\Panel $panel): bool
     {
         if ($panel->getId() === 'admin') {
-            // Forzamos la validación contra el team_id central (0)
-            // porque las peticiones Livewire POST a veces pierden el Session middleware
-            $previousTeam = getPermissionsTeamId();
-            setPermissionsTeamId(config('filament-shield.central_team_id', 0));
-
-            $hasAccess = $this->hasRole(config('filament-shield.super_admin.name', 'super_admin'));
-
-            setPermissionsTeamId($previousTeam);
-            return $hasAccess;
+            // Query directa a la relación de roles sin depender del team_id de Spatie,
+            // para evitar falsos negativos en peticiones Livewire AJAX.
+            return $this->roles()
+                ->where('name', config('filament-shield.super_admin.name', 'super_admin'))
+                ->exists();
         }
 
         if ($panel->getId() === 'client') {

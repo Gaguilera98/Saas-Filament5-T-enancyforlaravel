@@ -18,13 +18,11 @@ class TenantPolicy
      */
     public function before(User $user, string $ability): bool|null
     {
-        // Seteamos el team central antes de verificar el rol
-        $previousTeam = getPermissionsTeamId();
-        setPermissionsTeamId(config('filament-shield.central_team_id', 0));
-
-        $isSuperAdmin = $user->hasRole(config('filament-shield.super_admin.name', 'super_admin'));
-
-        setPermissionsTeamId($previousTeam);
+        // Verificación directa en BD de la relación de roles,
+        // sin depender del team_id de Spatie (que no está disponible en Livewire AJAX).
+        $isSuperAdmin = $user->roles()
+            ->where('name', config('filament-shield.super_admin.name', 'super_admin'))
+            ->exists();
 
         return $isSuperAdmin ? true : null;
     }
