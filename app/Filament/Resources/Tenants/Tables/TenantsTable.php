@@ -58,11 +58,17 @@ class TenantsTable
             ])
             ->recordActions([
                 EditAction::make(),
-                DeleteAction::make()
+                \Filament\Tables\Actions\Action::make('delete')
                     ->label('Eliminar')
+                    ->icon('heroicon-o-trash')
+                    ->color('danger')
+                    ->requiresConfirmation()
                     ->modalHeading('¿Eliminar clínica?')
                     ->modalDescription('Esto eliminará el tenant y todos sus datos en la base de datos del pool. Esta acción no se puede deshacer.')
-                    ->modalSubmitActionLabel('Sí, eliminar todo'),
+                    ->modalSubmitActionLabel('Sí, eliminar todo')
+                    ->action(function (\App\Models\Tenant $record): void {
+                        $record->delete();
+                    }),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
