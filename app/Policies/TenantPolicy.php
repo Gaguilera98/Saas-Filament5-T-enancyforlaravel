@@ -5,70 +5,87 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Models\Tenant;
+use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
-use Illuminate\Foundation\Auth\User as AuthUser;
 
 class TenantPolicy
 {
     use HandlesAuthorization;
 
-    public function viewAny(AuthUser $authUser): bool
+    /**
+     * Shield registra un "before" gate global para super_admin.
+     * Este método es el respaldo explícito para el panel Admin central.
+     */
+    public function before(User $user, string $ability): bool|null
     {
-        return $authUser->can('ViewAny:Tenant');
+        // Seteamos el team central antes de verificar el rol
+        $previousTeam = getPermissionsTeamId();
+        setPermissionsTeamId(config('filament-shield.central_team_id', 0));
+
+        $isSuperAdmin = $user->hasRole(config('filament-shield.super_admin.name', 'super_admin'));
+
+        setPermissionsTeamId($previousTeam);
+
+        return $isSuperAdmin ? true : null;
     }
 
-    public function view(AuthUser $authUser, Tenant $tenant): bool
+    public function viewAny(User $user): bool
     {
-        return $authUser->can('View:Tenant');
+        return $user->can('ViewAny:Tenant');
     }
 
-    public function create(AuthUser $authUser): bool
+    public function view(User $user, Tenant $tenant): bool
     {
-        return $authUser->can('Create:Tenant');
+        return $user->can('View:Tenant');
     }
 
-    public function update(AuthUser $authUser, Tenant $tenant): bool
+    public function create(User $user): bool
     {
-        return $authUser->can('Update:Tenant');
+        return $user->can('Create:Tenant');
     }
 
-    public function delete(AuthUser $authUser, Tenant $tenant): bool
+    public function update(User $user, Tenant $tenant): bool
     {
-        return $authUser->can('Delete:Tenant');
+        return $user->can('Update:Tenant');
     }
 
-    public function deleteAny(AuthUser $authUser): bool
+    public function delete(User $user, Tenant $tenant): bool
     {
-        return $authUser->can('DeleteAny:Tenant');
+        return $user->can('Delete:Tenant');
     }
 
-    public function restore(AuthUser $authUser, Tenant $tenant): bool
+    public function deleteAny(User $user): bool
     {
-        return $authUser->can('Restore:Tenant');
+        return $user->can('DeleteAny:Tenant');
     }
 
-    public function forceDelete(AuthUser $authUser, Tenant $tenant): bool
+    public function restore(User $user, Tenant $tenant): bool
     {
-        return $authUser->can('ForceDelete:Tenant');
+        return $user->can('Restore:Tenant');
     }
 
-    public function forceDeleteAny(AuthUser $authUser): bool
+    public function forceDelete(User $user, Tenant $tenant): bool
     {
-        return $authUser->can('ForceDeleteAny:Tenant');
+        return $user->can('ForceDelete:Tenant');
     }
 
-    public function restoreAny(AuthUser $authUser): bool
+    public function forceDeleteAny(User $user): bool
     {
-        return $authUser->can('RestoreAny:Tenant');
+        return $user->can('ForceDeleteAny:Tenant');
     }
 
-    public function replicate(AuthUser $authUser, Tenant $tenant): bool
+    public function restoreAny(User $user): bool
     {
-        return $authUser->can('Replicate:Tenant');
+        return $user->can('RestoreAny:Tenant');
     }
 
-    public function reorder(AuthUser $authUser): bool
+    public function replicate(User $user, Tenant $tenant): bool
     {
-        return $authUser->can('Reorder:Tenant');
+        return $user->can('Replicate:Tenant');
+    }
+
+    public function reorder(User $user): bool
+    {
+        return $user->can('Reorder:Tenant');
     }
 }
