@@ -16,4 +16,13 @@ class EditRole extends EditRecord
             DeleteAction::make(),
         ];
     }
+
+    protected function afterSave(): void
+    {
+        $permissionModels = collect($this->data['permissions'] ?? [])
+            ->flatten()
+            ->unique();
+            
+        $this->record->syncPermissions($permissionModels);
+    }
 }

@@ -13,8 +13,8 @@ class RoleForm
             ->components([
                 TextInput::make('tenant_id')
                     ->numeric(),
-                TextInput::make('name')
-                    ->required(),
+                // TextInput::make('name')
+                //     ->required(),
                 TextInput::make('guard_name')
                     ->required(),
             ]);
