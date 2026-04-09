@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\Tenants\Tables;
 
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
@@ -58,7 +58,7 @@ class TenantsTable
             ])
             ->recordActions([
                 EditAction::make(),
-                \Filament\Tables\Actions\Action::make('delete')
+                Action::make('delete')
                     ->label('Eliminar')
                     ->icon('heroicon-o-trash')
                     ->color('danger')
