@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Tenants\Tables;
 
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
@@ -57,6 +58,11 @@ class TenantsTable
             ])
             ->recordActions([
                 EditAction::make(),
+                DeleteAction::make()
+                    ->label('Eliminar')
+                    ->modalHeading('¿Eliminar clínica?')
+                    ->modalDescription('Esto eliminará el tenant y todos sus datos en la base de datos del pool. Esta acción no se puede deshacer.')
+                    ->modalSubmitActionLabel('Sí, eliminar todo'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
