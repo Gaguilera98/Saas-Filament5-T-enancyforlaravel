@@ -13,16 +13,15 @@ class SetTenantDatabaseConnection
 {
     public function handle(Request $request, Closure $next)
     {
-        // ===== LOGS DE DIAGNÓSTICO (quitar en producción estable) =====
-        \Illuminate\Support\Facades\Log::info('[Tenancy] Request entrante', [
-            'host'            => $request->getHost(),
-            'full_url'        => $request->fullUrl(),
-            'tenant_active'   => tenancy()->initialized ? 'SÍ' : 'NO',
-            'tenant_id'       => tenant()?->id ?? 'ninguno',
-            'tenant_db_pool'  => tenant()?->db_pool ?? 'ninguno',
-            'central_domains' => config('tenancy.central_domains'),
+        // LOG DE EMERGENCIA EN PRODUCCIÓN
+        \Illuminate\Support\Facades\Log::info('[DEBUG SUBDOMINIO]', [
+            'host' => $request->getHost(),
+            'path' => $request->path(),
+            'domain_base' => config('app.url'),
+            'tenancy_initialized' => tenancy()->initialized ? 'SÍ' : 'NO',
+            'tenant_id' => tenant()?->id ?? 'NULO',
+            'query_domains' => \Illuminate\Support\Facades\DB::connection('pgsql')->table('domains')->pluck('domain')->toArray(),
         ]);
-        // ==============================================================
 
         if ($tenant = tenant()) {
             $connection = $tenant->db_pool ?? config('tenancy.database.central_connection');
