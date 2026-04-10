@@ -31,7 +31,8 @@ class ClientPanelProvider extends PanelProvider
     {
         return $panel
             ->id('client')
-            ->path('client')
+            ->path('t/{tenant}/client')
+            ->tenant(\App\Models\Tenant::class, slugAttribute: 'id')
             ->authGuard('tenant')
             ->authPasswordBroker('tenant_users')
             ->viteTheme('resources/css/filament/client/theme.css')
@@ -52,9 +53,6 @@ class ClientPanelProvider extends PanelProvider
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
-                InitializeTenancyByDomain::class,
-                SetTenantDatabaseConnection::class,
-                SetSpatiePermissionTeam::class,
                 StartSession::class,
                 AuthenticateSession::class,
                 ShareErrorsFromSession::class,
@@ -62,7 +60,9 @@ class ClientPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
-                PreventAccessFromCentralDomains::class,
+                \Stancl\Tenancy\Middleware\InitializeTenancyByPath::class,
+                SetTenantDatabaseConnection::class,
+                SetSpatiePermissionTeam::class,
             ], true)
             ->plugins([
                 FilamentShieldPlugin::make()
